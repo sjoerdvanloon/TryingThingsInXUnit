@@ -9,49 +9,74 @@ namespace TryingThingsInXUnit
     internal class PortExtractor
     {
 
+        public PortExtractorConfiguration PortExtractorConfiguration { get; } = new PortExtractorConfiguration();
+
+        /// <summary>
+        /// Gets ports from a string which supports comma separated ports and port ranges
+        /// </summary>
+        /// <param name="input">string with parts</param>
+        /// <returns>All possible ports</returns>
+        /// <exception cref="ArgumentException">When something with the input is wrong</exception>
+        /// <example>1 -> 1</example>
+        /// <example>1,2 -> 1,2</example>
+        /// <example>1-3 -> 1,2,3</example>
+        /// <example>1-3,6 -> 1,2,3,6</example>
         public int[] GetPorts(string input)
         {
-            var ports = new List<int>();
-            if (!string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(input))
             {
-                var rangeParts = input.Split(',').Select(x => x.Trim());
+                throw new ArgumentNullException(nameof(input));
+            }
+
+            var validationResult = PortExtractorConfiguration.Validate();
+            if (!validationResult.Valid)
+            {
+                throw new Exception($"{nameof(PortExtractorConfiguration)} is invalid because {validationResult.Reason}");
+            }
+
+            var regexPattern = "[^\\" + PortExtractorConfiguration.PartSeparator + "|\\d" + (PortExtractorConfiguration.EnableMasking ? "|\\" + PortExtractorConfiguration.MaskIndicator : "") + (PortExtractorConfiguration.EnableRanges ? "|\\" + PortExtractorConfiguration.RangeIndicator : "") + "]";
+            if (System.Text.RegularExpressions.Regex.IsMatch(input, regexPattern))
+            {
+                throw new ArgumentException($"{nameof(input)} contained unsupported characters");
+            }
+
+            var ports = new List<int>();
+                var rangeParts = input.Split(PortExtractorConfiguration.PartSeparator).Select(x => x.Trim());
                 foreach (var rangePart in rangeParts)
                 {
-                    var unparsedNumbers = rangePart.Split("-").Select(x => x.Trim()).ToArray();
-                    if (unparsedNumbers.Count() > 2)
+                    var unparsedNumbers = rangePart.Split(PortExtractorConfiguration.RangeIndicator).Where(x=> !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToArray();
+
+                    switch (unparsedNumbers.Count())
                     {
-                        throw new ArgumentException($"Range part {rangePart} contained more then 2 ({unparsedNumbers.Count()}) unparsed numbers parts");
+                        case 0:
+                            throw new ArgumentException($"Range part '{rangePart}' contained no number parts");
+                        case 1:
+                            var firstUnparsedNumber = unparsedNumbers[0];
+                            if (firstUnparsedNumber.Contains(PortExtractorConfiguration.MaskIndicator))
+                            {
+                                throw new NotSupportedException("Masks not yet supported");
+                            }
+                            else
+                            {
+                                ports.Add(int.Parse(firstUnparsedNumber));
+                            }
+                            break;
+                        case 2:
+                            var portOne = int.Parse(unparsedNumbers[0]);
+                            var portTwo = int.Parse(unparsedNumbers[1]);
+                            if (portTwo <= portOne)
+                                throw new ArgumentException($"Port two {portTwo} should be larger then port one {portOne}");
+
+                            for (int port = portOne; port <= portTwo; port++)
+                            {
+                                ports.Add(port);
+                            }
+
+                            break;
+
+                        default:
+                            throw new ArgumentException($"Range part {rangePart} contained more then 2 ({unparsedNumbers.Count()}) unparsed numbers parts");
                     }
-
-                    if (!int.TryParse(unparsedNumbers[0], out var portOne))
-                    {
-                        throw new ArgumentException($"{unparsedNumbers[0]} is not an valid int");
-                    }
-
-                    if (unparsedNumbers.Count() == 1)
-                    {
-                        ports.Add(portOne);
-                    }
-                    else
-                    {
-                        // Its a range
-                        if (!int.TryParse(unparsedNumbers[1], out var portTwo))
-                        {
-                            throw new ArgumentException($"{unparsedNumbers[1]} is not an valid int");
-                        }
-
-                        if (portTwo <= portOne)
-                        {
-                            throw new ArgumentException($"Port two {portTwo} should be larger then port one {portOne}");
-                        }
-
-                        for (int port = portOne; port <= portTwo; port++)
-                        {
-                            ports.Add(port);
-                        }
-                    }
-
-                }
             }
 
             return ports.ToArray();

@@ -25,7 +25,7 @@ namespace TryingThingsInXUnit
             }    
         }
 
-        [Theory()]
+        [Theory(Skip= "lut")]
         [InlineData(4444)]
         [InlineData(4445)]
         [InlineData(4446)]
@@ -46,7 +46,7 @@ namespace TryingThingsInXUnit
             GetCurrentInUsePorts().Should().Contain(port);
         }
 
-        [Fact()]
+        [Fact(Skip = "lut")]
         public void ChromeDriver_WithNoPortSet_ShouldWork()
         {
             // sanity check

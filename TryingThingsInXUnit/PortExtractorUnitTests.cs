@@ -42,30 +42,92 @@ namespace TryingThingsInXUnit
             act.Should().Throw<ArgumentException>().WithMessage("Range part 1-2-3 contained more then 2 (3) unparsed numbers parts");
         }
 
-        [Fact()]
-        public void GetPorts_ShouldThrowException_WhenFirstNumberIsNotANumber()
+        [Theory()]
+        [InlineData("1-2", true, false)]
+        [InlineData("1*2", false, true)]
+        [InlineData("1z2", true, true)]
+        public void GetPorts_ShouldThrowException_WhenUnsupportedCharacter(string input, bool enableMasking, bool enableRanges)
         {
             // Arrange
             var instance = new PortExtractor();
+            instance.PortExtractorConfiguration.EnableMasking = enableMasking;
+            instance.PortExtractorConfiguration.EnableRanges = enableRanges;
 
             // Act
-            Action act = () => instance.GetPorts("a");
+            Action act = () => instance.GetPorts(input);
 
             // Assert
-            act.Should().Throw<ArgumentException>().WithMessage("a is not an valid int");
+            act.Should().Throw<ArgumentException>().WithMessage("input contained unsupported characters");
         }
 
         [Fact()]
-        public void GetPorts_ShouldThrowException_WhenSecondNumberIsNotANumber()
+        public void GetPorts_ShouldThrowException_WhenFirstNumberIsSmallerThenSecond()
         {
             // Arrange
             var instance = new PortExtractor();
 
             // Act
-            Action act = () => instance.GetPorts("1-b");
+            Action act = () => instance.GetPorts("3-1");
 
             // Assert
-            act.Should().Throw<ArgumentException>().WithMessage("b is not an valid int");
+            act.Should().Throw<ArgumentException>().WithMessage("Port two 1 should be larger then port one 3");
+        }
+
+        [Fact()]
+        public void GetPorts_ShouldThrowException_WhenNoNumberPartsCouldBeFound()
+        {
+            // Arrange
+            var instance = new PortExtractor();
+
+            // Act
+            Action act = () => instance.GetPorts("-");
+
+            // Assert
+            act.Should().Throw<ArgumentException>().WithMessage("Range part '-' contained no number parts");
+        }
+
+        [Theory()]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void GetPorts_ShouldThrowException_WhenNoInputWasGiven(string input)
+        {
+            // Arrange
+            var instance = new PortExtractor();
+
+            // Act
+            Action act = () => instance.GetPorts(input);
+
+            // Assert
+            act.Should().Throw<ArgumentNullException>().WithParameterName("input");
+        }
+
+        [Fact()]
+        public void GetPorts_ShouldThrowException_WhenMaskingWasUsed()
+        {
+            // Arrange
+            var instance = new PortExtractor();
+
+            // Act
+            Action act = () => instance.GetPorts("1*");
+
+            // Assert
+            act.Should().Throw<NotSupportedException>();
+        }
+
+        [Fact()]
+        public void GetPorts_ShouldThrowException_ConfigurationWasInvalid()
+        {
+            // Arrange
+            var instance = new PortExtractor();
+            instance.PortExtractorConfiguration.MaskIndicator = '-';
+            instance.PortExtractorConfiguration.PartSeparator = '-';
+
+            // Act
+            Action act = () => instance.GetPorts("1");
+
+            // Assert
+            act.Should().Throw<Exception>().WithMessage("PortExtractorConfiguration is invalid*");
         }
 
     }
