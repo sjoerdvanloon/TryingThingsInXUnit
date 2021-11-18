@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace TestProject1
+namespace TryingThingsInXUnit
 {
     public class TombolaUnitTests
     {

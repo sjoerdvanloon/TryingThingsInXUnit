@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestProject1
+namespace TryingThingsInXUnit
 {
     internal class Tombola<T>
     {

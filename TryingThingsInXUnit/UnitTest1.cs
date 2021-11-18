@@ -6,12 +6,12 @@ using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace TestProject1
+namespace TryingThingsInXUnit
 {
-    public class UnitTest1
+    public class FluentAssertionsUnitTests
     {
         [Fact]
-        async public Task Test1()
+        async public Task CheckIfAsyncThrow_GivesCorrectException()
         {
             // act
             Func<Task> act = () => TestMe();
@@ -22,7 +22,7 @@ namespace TestProject1
         }
 
         [Fact]
-        async public Task Test2()
+        async public Task CheckIfType_IsCorrect()
         {
             await Task.Delay(0);
             // act
@@ -33,40 +33,6 @@ namespace TestProject1
 
 
         }
-
-        [Theory()]
-        [InlineData(456)]
-        public void FindIpPort(int port)
-        {
-            bool isAvailable = true;
-
-            // Evaluate current system tcp connections. This is the same information provided
-            // by the netstat command line application, just in .Net strongly-typed object
-            // form.  We will look through the list, and if our port we would like to use
-            // in our TcpClient is occupied, we will set isAvailable to false.
-            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            TcpConnectionInformation[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
-
-            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
-            {
-                if (tcpi.LocalEndPoint.Port == port)
-                {
-                    isAvailable = false;
-                    break;
-                }
-            }
-
-
-
-            // At this point, if isAvailable is true, we can proceed accordingly.
-        }
-
-
-        
-
-
-
-
 
         public class Sergej
         {
