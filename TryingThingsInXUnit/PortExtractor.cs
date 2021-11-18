@@ -52,9 +52,18 @@ namespace TryingThingsInXUnit
                             throw new ArgumentException($"Range part '{rangePart}' contained no number parts");
                         case 1:
                             var firstUnparsedNumber = unparsedNumbers[0];
-                            if (firstUnparsedNumber.Contains(PortExtractorConfiguration.MaskIndicator))
-                            {
-                                throw new NotSupportedException("Masks not yet supported");
+                        if (firstUnparsedNumber.Contains(PortExtractorConfiguration.MaskIndicator))
+                        {
+                            throw new NotSupportedException("Masks not yet supported");
+                        
+                            /*
+                             * * = 1 until 9
+                             * 10* -> 100 until 109
+                             * 1*1 -> 101,111,121,131,141,151,161,171,181,191
+                             * 1** -> 100, 101,102,103,104,105,106,107,108,109,110,111 until 199
+                             * *1* -> 10, 11 until 19, 110 until 119, 210 until 219 until 910 untill 919
+                             * *** -> 1 untill 999
+                             */
                             }
                             else
                             {
