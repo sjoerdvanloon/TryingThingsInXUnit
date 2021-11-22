@@ -9,6 +9,7 @@ using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Chrome;
 using System.Net.NetworkInformation;
 using FluentAssertions;
+using System.Diagnostics;
 
 namespace TryingThingsInXUnit
 {
@@ -22,20 +23,27 @@ namespace TryingThingsInXUnit
             {
                 this._webDriver.Quit();
                 this._webDriver.Dispose();
+
+                //var processes = Process.GetProcessesByName("ChromeDriver.exe");
+                //foreach (var process in processes)
+                //{
+                //    process.Kill(true);
+                //}
             }    
         }
 
-        [Theory(Skip= "lut")]
-        [InlineData(4444)]
-        [InlineData(4445)]
-        [InlineData(4446)]
-        public void ChromeDriver_WithPortSet_ShouldUseThatPort(int port)
+        [Theory(Skip ="For live unit testing")]
+        [InlineData(4444, true)]
+        [InlineData(4444, false)]
+        [InlineData(4445, false)]
+        [InlineData(4446, false)]
+        public void ChromeDriver_WithPortSet_ShouldUseThatPort(int port, bool again)
         {
             // sanity check
-            GetCurrentInUsePorts().Should().NotContain(port);
+            GetCurrentInUsePorts().Should().NotContain(port); // This fails when it is already in use
             
             // Arrange
-            var service = ChromeDriverService.CreateDefaultService();
+            var service = ChromeDriverService.CreateDefaultService("C:\\SeleniumDrivers");
             service.Port = port;
             _webDriver = new ChromeDriver(service);
 
