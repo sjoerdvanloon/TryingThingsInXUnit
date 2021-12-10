@@ -54,7 +54,7 @@ namespace TryingThingsInXUnit
             GetCurrentInUsePorts().Should().Contain(port);
         }
 
-        [Fact(Skip = "lut")]
+        [Fact()]
         public void ChromeDriver_WithNoPortSet_ShouldWork()
         {
             // sanity check
